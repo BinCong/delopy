@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configservice #服务名
+  labels:
+    app: configservice #服务名
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configservice #服务名
+  template:
+    metadata:
+      labels:
+        app: configservice #服务名
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "configservice" #服务名
+        dapr.io/app-port: "80"
+        dapr.io/config: "zipkin"
+        dapr.io/sidecar-listen-addresses: "0.0.0.0"
+    spec:
+      containers:
+        - name: configservice #服务名
+          image: 120.77.8.172:3305/library/xj-configservice:latest #改成harbor上的镜像地址
+          ports:
+            - containerPort: 80
+          imagePullPolicy: IfNotPresent
+      imagePullSecrets:
+        - name: harborlogin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configservice #服务名
+spec:
+  type: ClusterIP
+  selector:
+    app: configservice #服务名
+  ports:
+    - port: 80
+      targetPort: 3500 #如果是后端服务是sidecar的3500端口，前端是80端口
+
+
+
+
+
+
+

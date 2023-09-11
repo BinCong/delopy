@@ -1,0 +1,38 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+  - system: bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 192.168.110.100 # 本机Ip
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  imagePullPolicy: IfNotPresent
+  name: node
+  taints: null
+ 
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: "192.168.110.100:6443" # 搭建多master高可用时，可设置为Vip地址
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: registry.aliyuncs.com/google_containers # 设置阿里云镜像地址
+kind: ClusterConfiguration
+kubernetesVersion: 1.22.2
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 12.16.0.0/16 # Pod网段
+  serviceSubnet: 12.26.0.0/16 # Service网段
+scheduler: {}

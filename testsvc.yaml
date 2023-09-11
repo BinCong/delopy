@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test
+  labels:
+    app: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "test"
+        dapr.io/app-port: "80"
+        dapr.io/config: "zipkin"
+        dapr.io/sidecar-listen-addresses: "0.0.0.0"
+    spec:
+      containers:
+      - name: test
+        image: 120.77.8.172:3305/library/xjtest:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: IfNotPresent
+      imagePullSecrets:
+      - name: harborlogin
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test
+spec:
+  type: ClusterIP
+  selector:
+    app: test
+  ports:
+    - port: 80
+      targetPort: 3500
+

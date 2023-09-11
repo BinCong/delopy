@@ -1,0 +1,36 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: xjauth
+spec:
+  type: middleware.http.oauth2
+  version: v1
+  metadata:
+  - name: clientId
+    value: ""
+  - name: clientSecret
+    value: ""
+  - name: scopes
+    value: ""
+  - name: authURL
+    value: "manager.sumgee.com/v1.0/reportservice/propertycharge/GetOverdueDebtByMonth"
+  - name: tokenURL
+    value: ""
+  - name: redirectURL
+    value: ""
+  - name: authHeaderName
+    value: "authorization"
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: pipeline
+spec:
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "http://zipkin.default.svc.cluster.local:9411/api/v2/spans"
+  httpPipeline:
+    handlers:
+    - name: xjauth
+      type: middleware.http.oauth2

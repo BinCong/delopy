@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: envoy
+  name: envoy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: envoy
+  template:
+    metadata:
+      labels:
+        run: envoy
+    spec:
+      containers:
+      - image: envoyproxy/envoy-dev:7a4bbb3c5b52b84625ad0626f916be1c99399ba8
+        name: envoy
+        ports:
+         - containerPort: 80
+         - containerPort: 9901
+        volumeMounts:
+         - name: envoy-config
+           mountPath: "/etc/envoy"
+           readOnly: true
+      volumes:
+       - name: envoy-config
+         configMap:
+           name: envoy-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      name: http
+      targetPort: 80
+  selector:
+    run: envoy

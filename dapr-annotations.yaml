@@ -1,0 +1,5 @@
+controller:
+  podAnnotations:
+    dapr.io/enabled: "true"
+    dapr.io/id: "dapr-gateway"
+    dapr.io/port: "80"

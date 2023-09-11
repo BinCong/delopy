@@ -1,0 +1,209 @@
+admin:
+  access_log_path: "/tmp/admin_access.log"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 80
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: AUTO
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: ["manager.sumgee.com"]
+                      routes:
+                        - match:
+                            prefix: "/v1.0/device/"
+                          name: "dev"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/device/method/"
+                            cluster: dev
+                        - match:
+                            prefix: "/v1.0/propertyservice/"
+                          name: "prop"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/propertyservice/method/"
+                            cluster: property
+                        - match:
+                            prefix: "/v1.0/uaaservice/"
+                          name: "oauth"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/uaaservice/method/"
+                            cluster: uaa
+                        - match:
+                            prefix: "/v1.0/configservice/"
+                          name: "config"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/configservice/method/"
+                            cluster: config
+                        - match:
+                            prefix: "/v1.0/msmservice/"
+                          name: "msm"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/msmservice/method/"
+                            cluster: msm
+                        - match:
+                            prefix: "/v1.0/payservice/"
+                          name: "pay"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/payservice/method/"
+                            cluster: pay
+                        - match:
+                            prefix: "/v1.0/reportservice/"
+                          name: "report"
+                          route:
+                            prefix_rewrite: "/v1.0/invoke/reportservice/method/"
+                            cluster: report
+                        - match:
+                            prefix: ""
+                          name: "frontend"
+                          route:
+                            prefix_rewrite: "/"
+                            cluster: frontend
+                    - name: other_service
+                      domains: ["www.sumgee.com"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          name: "offical"
+                          route:
+                            prefix_rewrite: "/"
+                            cluster: offical
+  clusters:
+    - name: dapr
+      type: strict_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: dapr
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 3500
+    - name: dev
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: dev
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: device #设备
+                      port_value: 80
+    - name: property
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: property
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: propertyservice #物管
+                      port_value: 80
+    - name: uaa
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: uaa
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: uaaservice #授权认证
+                      port_value: 80
+    - name: msm
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: msm
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: msmservice #短信
+                      port_value: 80
+    - name: config
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: config
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: configservice #服务名
+                      port_value: 80
+    - name: pay
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: pay
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: payservice #支付
+                      port_value: 80
+    - name: report
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: report
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: reportservice #报表
+                      port_value: 80
+    - name: frontend
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: frontend
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: frontend #商户前端
+                      port_value: 80
+    - name: offical
+      type: logical_dns
+      connect_timeout: 15s
+      load_assignment:
+        cluster_name: offical
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: officalfrontend #官网
+                      port_value: 80
+

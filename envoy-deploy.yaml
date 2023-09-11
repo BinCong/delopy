@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: envoy-gateway
+  name: envoy-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy-gateway
+  template:
+    metadata:
+      labels:
+        app: envoy-gateway
+    spec:
+      containers:
+      - image: envoyproxy/envoy-dev:7a4bbb3c5b52b84625ad0626f916be1c99399ba8
+        name: envoy-gateway
+        ports:
+         - containerPort: 80
+         - containerPort: 9901
+        volumeMounts:
+         - name: envoy-config
+           mountPath: "/etc/envoy"
+           readOnly: true
+      volumes:
+       - name: envoy-config
+         configMap:
+           name: envoy-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 80
+      protocol: TCP
+  selector:
+      app: envoy-gateway
+
+
+
+
+
+

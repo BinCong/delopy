@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend #服务名
+  labels:
+    app: frontend #服务名
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend #服务名
+  template:
+    metadata:
+      labels:
+        app: frontend #服务名
+    spec:
+      containers:
+        - name: frontend #服务名
+          image: 120.77.8.172:3305/library/cloudplaform_bussiness:latest #改成harbor上的镜像地址
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: harborlogin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend #服务名
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend #服务名
+  ports:
+    - port: 80
+      targetPort: 80 #如果是后端服务是sidecar的3500端口，前端是80端口
+
+
+
+
+
+
+
